@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）" />
+<meta property="og:description" content="N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）" />
+<link rel="canonical" href="http://localhost:4000/docs/2020/11/01/nqueens.html" />
+<meta property="og:url" content="http://localhost:4000/docs/2020/11/01/nqueens.html" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-11-01T00:00:00+08:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）" />
+<script type="application/ld+json">
+{"dateModified":"2020-11-01T00:00:00+08:00","datePublished":"2020-11-01T00:00:00+08:00","headline":"N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/docs/2020/11/01/nqueens.html"},"description":"N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）","url":"http://localhost:4000/docs/2020/11/01/nqueens.html","@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1></h1>
+        </a>
+        <h2></h2>
+
+        <section id="downloads">
+          
+          <a href="" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>1 November 2020</small>
+<h1>N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）</h1>
+
+<p class="view">by </p>
+
+<h1 id="n皇后-回溯解法solving-the-n-queens-puzzle-using-backtracking">N皇后 回溯解法（Solving The N Queens Puzzle Using Backtracking）</h1>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>​			本人<strong>没有国际象棋经验</strong>，仅仅是看了几篇攻略写的本题，正好是<strong>每日打卡</strong>，就把这个问题拿出来讲一讲。</p>
+
+<p>本笔记实现完全是 C++，当然如果你是其他平台，<strong>算法的思路是一种常量</strong>，只要抓住方法，一样可以实现。</p>
+
+<h2 id="问题描述">问题描述</h2>
+
+<p>The n-queens puzzle is the problem of placing n queens on an n×n chessboard such that no two queens attack each other.</p>
+
+<p><img src="/assets/nqueens/images/8-queens.png" alt="N Queens Puzzle" /></p>
+
+<p>Given an integer n, return the number of distinct solutions to the n-queens puzzle.</p>
+
+<p><em>*Example:</em></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Input: 4
+Output: 2
+Explanation: There are two distinct solutions to the 4-queens puzzle as shown below.
+[
+ [".Q..",  // Solution 1
+  "...Q",
+  "Q...",
+  "..Q."],
+
+ ["..Q.",  // Solution 2
+  "Q...",
+  "...Q",
+  ".Q.."]
+]
+</code></pre></div></div>
+
+<p>来源：<a href="https://leetcode-cn.com/problems/n-queens-ii">力扣（LeetCode）</a></p>
+
+<h2 id="解题思路">解题思路</h2>
+
+<h3 id="基本规则">基本规则</h3>
+
+<p>​			要了解八皇后问题的解法，必须先了解一些国际象棋的规则，不用太多，只要了解<strong>皇后</strong>的活动范围即可。</p>
+
+<p>皇后作为一个棋子，其活动空间<strong>相当自由</strong>：</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle.png" alt="" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle.png" alt="queen" style="zoom:25%;" align='left'/> --></p>
+
+<blockquote>
+  <p>虚线表示皇后的活动空间</p>
+</blockquote>
+
+<h3 id="try-not-to-understand-it-try-to-feel-it">Try not to understand it. Try to feel it.</h3>
+
+<p>​		八皇后问题本身的历史也是相当悠久，它在1848年就被提出，并在1850年由 Franz Nauck 给出第一组解法。</p>
+
+<p>直到1972年，Edsger Dijkstra 给出了<strong>基于DFS回溯的程序结构化解法</strong>，这便是今天我们讨论的主题。</p>
+
+<p>​		我并不认为我是一个数学很好的程序员，实际上，真正意义上数学好的程序员并不多。程序员应该 <strong>Think In Computers</strong> ，</p>
+
+<p>而不是<strong>Totally Understand The PUZZLE</strong>。也就是说，繁复的计算工作基本让计算机完成，而程序员要做的是，对问题有个<strong>感性认知</strong>。</p>
+
+<h2 id="算法描述">算法描述</h2>
+
+<h3 id="先回溯到问题本身">先回溯到问题本身</h3>
+
+<p>​		回溯算法的本质，即用<strong>深度优先的方法</strong>（DFS）遍历一颗状态树。</p>
+
+<p>而此时，你可能会一脸懵逼，<strong>什么是DFS？什么又是状态树？状态树又是如何遍历的？</strong></p>
+
+<p>Be patient，我们先回到<strong>问题本身</strong>。</p>
+
+<p>八皇后问题，是给我们八个皇后棋子，找到一个<strong>摆法</strong>，使得每个皇后都<strong>无法相互攻击</strong>到。</p>
+
+<p>说白了，就是每个皇后的 <strong>左上角、右下角、上下左右</strong> 都 <strong>没有其他皇后</strong> 。</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle.png" alt="N Queens Puzzle" />
+<!-- [<img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle.png" alt="restricted" style="zoom:25%;" />  ] --></p>
+
+<p>（上图虚线所及的格子都不能有其他皇后）</p>
+
+<p>既然不能在同一行同一列，我们应该<strong>一行一行</strong>地放皇后。</p>
+
+<h3 id="一步一步来">一步一步来</h3>
+
+<p>假设我们把第一个皇后放在如图所示的位置，</p>
+
+<p><strong>第二行</strong> <strong>未被虚线覆盖到的</strong>位置 就是<strong>下一个皇后</strong>可以摆放的位置</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle 2.png" alt="2" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle 2.png" alt="1" style="zoom:25%;" align='left'/> --></p>
+
+<p>​</p>
+
+<p>我们继续摆放第二个皇后，放在合理的位置</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle 3.png" alt="3" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle 3.png" alt="2" style="zoom:25%;" align='left'/> --></p>
+
+<p>假如，我们在摆放第三个皇后时，很不幸，她被摆到了<strong>错误的位置</strong></p>
+
+<p><img src="/assets/nqueens/images/Page1.png" alt="4" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/Page1.png" style="zoom:25%;" align='left'/> --></p>
+
+<p>那么我们就像  <a href="https://baike.baidu.com/item/%E6%9D%80%E6%89%8B%E7%9A%87%E5%90%8E/2782035">杀手皇后的败者食尘</a> 一样<strong>回退</strong>到第二个皇后已经摆好的时间</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle 3.png" alt="5" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle 3.png" style="zoom:25%;" align='left'/> --></p>
+
+<p>既然看到了 <strong>未来</strong> 不如意，我们就重新思考，把第三个皇后<strong>往后放一列</strong>，逆转未来！</p>
+
+<p><img src="/assets/nqueens/images/Page2.png" alt="6" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/Page2.png" alt="3" style="zoom:25%;" align='left' /> --></p>
+
+<p>这样就合理了。</p>
+
+<p>直到我们<strong>摆满八行</strong>，就记录一次结果</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle 4.png" alt="7" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle 4.png" alt="4" style="zoom:25%;" align='left'/> --></p>
+
+<h3 id="说到状态树">说到状态树</h3>
+
+<p>我们把<strong>每次决定</strong>都认为是一层树的节点</p>
+
+<p>比如选择了第二层四节点（第一层代表还没放皇后），就代表在<strong>第一行第四列</strong>摆放<strong>第一个皇后</strong>，如下图</p>
+
+<p><img src="/assets/nqueens/images/StateTree.png" alt="8" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/StateTree.png" alt="tree" style="zoom:25%;" align='left'/> --></p>
+
+<p>这里的状态树并不是 Full Tree（如果是Full的话，那么就是代表在棋盘上<strong>放满了皇后</strong>，显然是不合理的）。</p>
+
+<p>只有符合题目要求的决定会被选择，选择完 <strong>8层</strong>算作一种解，或者说是一种<strong>状态</strong>。</p>
+
+<p>那么所有这些<strong>状态</strong>或是解，构成的<strong>集合</strong>被称为状态空间（State Space）。</p>
+
+<p>用科幻一些的方法说明，有多少种<strong>解</strong>，就相当于有多少种代表不同选择<strong>平行宇宙</strong>。</p>
+
+<h3 id="dfs深度优先算法">DFS深度优先算法</h3>
+
+<p>​		讲完了<strong>状态树</strong>，我们来讲讲什么是<strong>深度优先搜索</strong>DFS，因为可以把八皇后的决策问题抽象成<strong>状态树</strong>的结构，而后才有<strong>遍历</strong>的说法。按照深度优先遍历的方法来遍历一棵树，可以描述为：</p>
+
+<pre><code class="language-flow">st=&gt;start: 开始
+isend=&gt;condition: 是否遍历所有子节点
+nextLayer=&gt;operation: 遍历下一层
+return=&gt;operation: 返回上一层
+isGood=&gt;condition: 是否符合问题描述
+sibling=&gt;operation: 遍历旁节点
+ed=&gt;end: 结束
+
+st-&gt;isend(no)-&gt;nextLayer(left)-&gt;isGood(yes)-&gt;nextLayer
+isGood(no)-&gt;return-&gt;isend
+isend(yes)-&gt;sibling-&gt;isGood
+</code></pre>
+
+<p>把这个过程具体化大致是这个样子：</p>
+
+<p><img src="/assets/nqueens/images/N Queens Puzzle 3 2.png" alt="9" />
+<!-- <img src="/Users/alex/Desktop/CSDN/blogs/Algo/NQueens/images/N Queens Puzzle 3 2.png" style="zoom:25%;" align='left' /> --></p>
+
+<h2 id="代码实现">代码实现</h2>
+
+<h3 id="平台">平台</h3>
+
+<p>OS：MacOS Catlina 10.15.6</p>
+
+<p>CPU架构： x86_64</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>编译器：g++</td>
+      <td>Apple clang version 12.0.0 (clang-1200.0.26.2)</td>
+      <td>Target: x86_64-apple-darwin19.6.0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>IDE: Xcode</p>
+
+<h2 id="代码">代码</h2>
+
+<blockquote>
+  <p>注意：leetcode原题是N皇后问题，其算法的原理与八皇后一致，而下面的实现是面向N皇后实现</p>
+</blockquote>
+
+<h3 id="源码">源码</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Solution</span> <span class="p">{</span>
+<span class="nl">public:</span>
+        <span class="kt">int</span> <span class="n">count</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+        <span class="kt">void</span>  <span class="n">calNqueens</span><span class="p">(</span><span class="kt">int</span> <span class="n">row</span><span class="p">,</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span><span class="kt">int</span><span class="o">*</span> <span class="n">result</span><span class="p">){</span><span class="c1">//call calNqueen(0)</span>
+            <span class="c1">// 停止条件：到达棋盘最后一行</span>
+            <span class="c1">// 打印一种解法</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">row</span> <span class="o">==</span> <span class="n">n</span><span class="p">){</span>
+                <span class="k">this</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">++</span><span class="p">;</span>
+            <span class="c1">// printf("----------------\n");</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+
+        <span class="c1">// 遍历每一列</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">column</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">column</span><span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">column</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">//判断是否合理</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">isOk</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">result</span><span class="p">)){</span>
+                <span class="c1">//记录一种解法</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="p">;</span>
+                <span class="c1">//遍历下一行</span>
+                <span class="n">calNqueens</span><span class="p">(</span><span class="n">row</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">result</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+
+
+    <span class="c1">// 判断 该行该列 是否符合条件</span>
+    <span class="c1">// 即 是否存在皇后攻击范围内的棋子</span>
+    <span class="kt">bool</span> <span class="n">isOk</span><span class="p">(</span><span class="kt">int</span> <span class="n">row</span><span class="p">,</span><span class="kt">int</span> <span class="n">column</span><span class="p">,</span><span class="kt">int</span> <span class="n">n</span><span class="p">,</span><span class="kt">int</span><span class="o">*</span> <span class="n">result</span><span class="p">){</span>
+        <span class="kt">int</span> <span class="n">leftup</span> <span class="o">=</span> <span class="n">column</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span><span class="n">rightup</span> <span class="o">=</span> <span class="n">column</span> <span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+
+        <span class="c1">//逐行往上检查</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">row</span> <span class="o">-</span><span class="mi">1</span> <span class="p">;</span><span class="n">i</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span><span class="o">--</span><span class="n">i</span><span class="p">){</span>
+
+            <span class="c1">//第i行的column列（本列）是否有棋子</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span> <span class="n">column</span><span class="p">)</span><span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+
+            <span class="c1">//考虑左上</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">leftup</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">){</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="n">leftup</span><span class="p">)</span><span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="c1">//考虑右上</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">rightup</span><span class="o">&lt;=</span><span class="n">n</span><span class="p">){</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="n">rightup</span><span class="p">)</span><span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="o">--</span><span class="n">leftup</span><span class="p">;</span><span class="o">++</span><span class="n">rightup</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+
+    <span class="p">}</span>
+  <span class="c1">// 在本题OJ中相当于main函数</span>
+      <span class="kt">int</span> <span class="n">totalNQueens</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span><span class="o">*</span> <span class="n">result</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+        <span class="n">calNqueens</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">result</span><span class="p">);</span>
+        <span class="k">return</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<h3 id="结果">结果</h3>
+
+<p><img src="/assets/nqueens/images/result.jpeg" alt="" /></p>
+
+<h2 id="反思与补充">反思与补充</h2>
+
+<ol>
+  <li>在解决八皇后的问题的历史上，有计算机结构化程序的解法给出了92种解，而实际上的在这个解法诞生的100年之前，就已经被人用<strong>非计算机</strong>的方式解出了92种解法。</li>
+  <li>实际上，在八皇后的问题上，92种解法是我们<strong>将棋盘标记了坐标点的结果</strong>，也就是规定了ABCDEFGH、12345678的纵横的具有方向性的坐标的情况下，产生92种解法，我们称之为<strong>全解</strong>（All Solution）。如果我们不考虑坐标，其实92种很多解法都是重复的（棋盘可以对称、翻转），留下的不同解法只有12种，成为<strong>基本解</strong>。（详见<a href="https://en.wikipedia.org/wiki/Eight_queens_puzzle">维基百科及其reference</a>）</li>
+  <li>回溯算法的名字的起的很好，让人联想到了时间回溯的情景，将我们生活中的所有抉择看作是一颗树的话，我们如果只做<strong>单一选择</strong>，也就是沿着一条路径遍历，那么如果时间能回溯，也就是回到时间抉择的<strong>父节点</strong>，我们似乎可以重新选择，至少可以选择作出比现在更好的选择。</li>
+</ol>
+
+<h2 id="参考">参考</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Eight_queens_puzzle">维基百科</a></p>
+
+<p><a href="https://time.geekbang.org/column/article/74287">《数据结构与算法之美》 王争</a></p>
+
+<p><a href="https://leetcode-cn.com/problems/n-queens-ii/">Leetcode #52. N Queen II</a></p>
+
+
+
+  <small>tags: <em>algorithm</em></small>
+
+
+      </section>
+    </div>
+
+    
+  </body>
+</html>
