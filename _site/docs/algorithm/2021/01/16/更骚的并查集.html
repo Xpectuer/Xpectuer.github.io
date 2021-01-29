@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>更骚的并查集</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="更骚的并查集" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="更骚的并查集" />
+<meta property="og:description" content="更骚的并查集" />
+<link rel="canonical" href="http://localhost:4000/docs/algorithm/2021/01/16/%E6%9B%B4%E9%AA%9A%E7%9A%84%E5%B9%B6%E6%9F%A5%E9%9B%86.html" />
+<meta property="og:url" content="http://localhost:4000/docs/algorithm/2021/01/16/%E6%9B%B4%E9%AA%9A%E7%9A%84%E5%B9%B6%E6%9F%A5%E9%9B%86.html" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-16T00:00:00+08:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="更骚的并查集" />
+<script type="application/ld+json">
+{"datePublished":"2021-01-16T00:00:00+08:00","dateModified":"2021-01-16T00:00:00+08:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/docs/algorithm/2021/01/16/%E6%9B%B4%E9%AA%9A%E7%9A%84%E5%B9%B6%E6%9F%A5%E9%9B%86.html"},"description":"更骚的并查集","url":"http://localhost:4000/docs/algorithm/2021/01/16/%E6%9B%B4%E9%AA%9A%E7%9A%84%E5%B9%B6%E6%9F%A5%E9%9B%86.html","headline":"更骚的并查集","@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1></h1>
+        </a>
+        <h2></h2>
+
+        <section id="downloads">
+          
+          <a href="" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>16 January 2021</small>
+<h1>更骚的并查集</h1>
+
+<p class="view">by </p>
+
+<h1 id="更骚的并查集">更骚的并查集</h1>
+
+<h2 id="写在前面">写在前面</h2>
+
+<p>打个小广告：</p>
+
+<p>最近在学Golang，开了<strong>用Go语言实现算法的仓库</strong>，有兴趣的同学们可以来贡献哦～</p>
+
+<p>网址在这⬇️</p>
+
+<p><a href="https://github.com/Xpectuer/alGo">Project alGo</a></p>
+
+<p>如果你每天有力扣每日一题的习惯，你可能会感叹：</p>
+
+<p><strong>1月可真是一个图论月</strong></p>
+
+<p><del>确实如此，</del></p>
+
+<p>而并查集是解决<strong>连通分量问题</strong>以及<strong>具有传递关系问题</strong>的特色解法</p>
+
+<h2 id="并查集">并查集</h2>
+
+<p>并查集本身有两个优化方案：</p>
+
+<ul>
+  <li>路径压缩
+    <ul>
+      <li>在 <code class="language-plaintext highlighter-rouge">Find()</code> 方法中，将子树的节点拉到根节点，如此<strong>提高查找效率</strong>。</li>
+    </ul>
+  </li>
+  <li>按秩合并
+    <ul>
+      <li>维护每个节点子树的<strong>高度或节点数量</strong>，在合并时考察这个值。</li>
+    </ul>
+  </li>
+</ul>
+
+<p>我们要清楚并查集的作用是：</p>
+
+<p>将两个<strong>联通分量</strong>合并成一个<strong>联通分量</strong>。</p>
+
+<h3 id="803-打砖块">803. 打砖块</h3>
+
+<h4 id="问题描述">问题描述</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>有一个 m x n 的二元网格，其中 1 表示砖块，0 表示空白。砖块 稳定（不会掉落）的前提是：
+
+一块砖直接连接到网格的顶部，或者
+至少有一块相邻（4 个方向之一）砖块 稳定 不会掉落时
+给你一个数组 hits ，这是需要依次消除砖块的位置。每当消除 hits[i] = (rowi, coli) 位置上的砖块时，对应位置的砖块（若存在）会消失，然后其他的砖块可能因为这一消除操作而掉落。一旦砖块掉落，它会立即从网格中消失（即，它不会落在其他稳定的砖块上）。
+
+返回一个数组 result ，其中 result[i] 表示第 i 次消除操作对应掉落的砖块数目。
+
+注意，消除可能指向是没有砖块的空白位置，如果发生这种情况，则没有砖块掉落。
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>示例 1：
+
+输入：grid = [[1,0,0,0],[1,1,1,0]], hits = [[1,0]]
+输出：[2]
+解释：
+网格开始为：
+[[1,0,0,0]，
+ [1,1,1,0]]
+消除 (1,0) 处加粗的砖块，得到网格：
+[[1,0,0,0]
+ [0,1,1,0]]
+两个加粗的砖不再稳定，因为它们不再与顶部相连，也不再与另一个稳定的砖相邻，因此它们将掉落。得到网格：
+[[1,0,0,0],
+ [0,0,0,0]]
+因此，结果为 [2]
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>示例 2：
+
+输入：grid = [[1,0,0,0],[1,1,0,0]], hits = [[1,1],[1,0]]
+输出：[0,0]
+解释：
+网格开始为：
+[[1,0,0,0],
+ [1,1,0,0]]
+消除 (1,1) 处加粗的砖块，得到网格：
+[[1,0,0,0],
+ [1,0,0,0]]
+剩下的砖都很稳定，所以不会掉落。网格保持不变：
+[[1,0,0,0],
+ [1,0,0,0]]
+接下来消除 (1,0) 处加粗的砖块，得到网格：
+[[1,0,0,0],
+ [0,0,0,0]]
+剩下的砖块仍然是稳定的，所以不会有砖块掉落。
+因此，结果为 [0,0] 。
+
+</code></pre></div></div>
+
+<h4 id="思路">思路</h4>
+
+<p>我们知道，并查集的思想，</p>
+
+<p>是将两个分立的节点集合组成一个<strong>连通分量</strong></p>
+
+<p>我们观察这道题的题意：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>每当消除 hits[i] = (rowi, coli) 位置上的砖块时，
+对应位置的砖块（若存在）会消失，
+然后其他的砖块可能因为这一消除操作而掉落。
+</code></pre></div></div>
+
+<p>我来翻译一下这句话：</p>
+
+<p>当一个连通分量的<strong>根节点</strong>被打掉之后，</p>
+
+<p>该连通分量的<strong>其他节点</strong>会相应被消失</p>
+
+<p><img src="/assets/algo/disjointSet/0.png" alt="0" /></p>
+
+<p>想了20分钟，这似乎并不能用<strong>并查集</strong>来解决</p>
+
+<p>因为并查集解决的是将两个集合分量Union（<strong>连通</strong>）在一起</p>
+
+<p>而这里的过程是将两个分量<strong>拆开</strong></p>
+
+<p>当然不能，但是如果倒着来一遍呢？就像<em>TENET</em> 的剧情那样</p>
+
+<p><img src="/assets/algo/disjointSet/1.png" alt="截屏2021-01-16 下午2.42.39" /></p>
+
+<p>这一切都顺理成章了，两个分开的元素被<strong>原来打掉的元素</strong>合并在了一起。</p>
+
+<p>这便是这道题的关键思想。</p>
+
+<h3 id="编码">编码</h3>
+
+<ol>
+  <li>首先，既然用到了<a href="https://leetcode-cn.com/tag/union-find/">并查集</a>，我们应该把并查集的代码模版先写出来，读者可以试着自己默写一遍，回过头来看这段代码：</li>
+</ol>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="c">// 并查集的底层 size稍后解释</span>
+	<span class="n">parent</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">int</span><span class="p">,</span><span class="n">size</span><span class="o">+</span><span class="m">1</span><span class="p">)</span>
+	<span class="c">// 并查集每个元素的秩，即根节点对应的集合大小</span>
+	<span class="n">ufsize</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">int</span><span class="p">,</span><span class="n">size</span><span class="o">+</span><span class="m">1</span><span class="p">)</span>
+
+	<span class="c">// initiating</span>
+	<span class="c">// -----------------------------------</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;=</span><span class="n">size</span><span class="p">;</span><span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="n">parent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+		<span class="n">ufsize</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="m">1</span>
+	<span class="p">}</span>
+
+	<span class="k">var</span> <span class="n">Find</span> <span class="o">=</span> <span class="k">func</span><span class="p">(</span><span class="n">x</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+		<span class="n">root</span> <span class="o">:=</span> <span class="n">x</span>
+		<span class="k">for</span> <span class="n">root</span> <span class="o">!=</span> <span class="n">parent</span><span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="p">{</span>
+			<span class="n">root</span> <span class="o">=</span> <span class="n">parent</span><span class="p">[</span><span class="n">root</span><span class="p">]</span>
+		<span class="p">}</span>
+		<span class="c">// 路径压缩</span>
+		<span class="n">parent</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">root</span>
+		<span class="k">return</span> <span class="n">root</span>
+
+	<span class="p">}</span>
+
+	<span class="k">var</span> <span class="n">Union</span> <span class="o">=</span> <span class="k">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">rootX</span><span class="p">,</span> <span class="n">rootY</span> <span class="o">:=</span> <span class="n">Find</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">Find</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">rootX</span> <span class="o">==</span> <span class="n">rootY</span> <span class="p">{</span>
+			<span class="k">return</span>
+		<span class="p">}</span>
+    <span class="c">// 按秩合并（小集合合并入大集合），提高平衡度</span>
+		<span class="k">if</span> <span class="n">ufsize</span><span class="p">[</span><span class="n">rootX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">ufsize</span><span class="p">[</span><span class="n">rootY</span><span class="p">]</span> <span class="p">{</span>
+			<span class="n">parent</span><span class="p">[</span><span class="n">rootX</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootY</span>
+			<span class="n">ufsize</span><span class="p">[</span><span class="n">rootY</span><span class="p">]</span> <span class="o">+=</span> <span class="n">ufsize</span><span class="p">[</span><span class="n">rootX</span><span class="p">]</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">parent</span><span class="p">[</span><span class="n">rootY</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootX</span>
+			<span class="n">ufsize</span><span class="p">[</span><span class="n">rootX</span><span class="p">]</span> <span class="o">+=</span> <span class="n">ufsize</span><span class="p">[</span><span class="n">rootY</span><span class="p">]</span>
+		<span class="p">}</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>我们知道，并查集的底层需要存储<strong>问题空间里</strong>每一个元素（这里是指网格中的砖块）。那么如何用<strong>一维的数组存储一个二维空间的全体元素？</strong></p>
+
+    <p>这个问题也相当简单：</p>
+
+    <div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// cols代表grid的总列数</span>
+<span class="n">x</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">+</span> <span class="n">y</span>
+</code></pre></div>    </div>
+
+    <p>二维的网格被<strong>压扁</strong>成了一个一维数组，下标则被表示成了一行</p>
+
+    <p>可以得到，这个一位数组（并查集底层）的大小为</p>
+
+    <div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// rows为总行数 cols为总列数</span>
+<span class="n">size</span> <span class="o">=</span> <span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>如何求得<strong>连带掉落的砖块个数</strong>？</p>
+
+    <p>我们知道，从反向思维的角度，</p>
+
+    <p>即从砖块被打碎的状态到完整的状态，这里打碎的状态不用囊括附带掉落的砖块，因为题目<strong>只是要求返回其个数</strong>。</p>
+
+    <p>个数即一个集合中打碎前后元素的个数之差：</p>
+
+    <div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">res</span> <span class="o">=</span> <span class="n">size_origin</span> <span class="o">-</span> <span class="n">size_current</span> <span class="o">-</span><span class="m">1</span>  <span class="c">// -1是因为不包括打碎的那个砖块</span>
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>解决了如上的问题后，编码将会相对轻松，我将分模块讲解编码思路：</p>
+
+<ol>
+  <li>我们需要从打碎后的网格状态，因此需要深拷贝一个数组</li>
+</ol>
+
+<blockquote>
+  <p>插一句，由于go语言的Slice类型是引用类型，我们这里需要用到深拷贝，即自己手动拷贝数组的每一个元素，或者调用Go语言提供的<a href="https://golang.org/src/builtin/builtin.go?s=5091:5121#L131">built-in API</a>:</p>
+</blockquote>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="nb">copy</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">src</span><span class="p">[]</span><span class="n">Type</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>​	我们将拷贝的数组初始化到<strong>打碎后</strong>到样子：</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">hit</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">hits</span> <span class="p">{</span>
+		<span class="n">copyArr</span><span class="p">[</span><span class="n">hit</span><span class="p">[</span><span class="m">0</span><span class="p">]][</span><span class="n">hit</span><span class="p">[</span><span class="m">1</span><span class="p">]]</span> <span class="o">=</span> <span class="m">0</span>
+	<span class="p">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li>接下来就是构造<strong>打碎后</strong>的并查集了：</li>
+</ol>
+
+<blockquote>
+  <p>📷这里有一个小trick: 就是<strong>将并查集的最后一个元素作为根节点</strong>，这个根节点不保存任何信息，这一点请在初始化parent数组时多加注意⚠️</p>
+</blockquote>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// step1. 根据题意构造根节点与屋顶（第一行）砖块的集合关系</span>
+	<span class="k">for</span> <span class="n">j</span><span class="o">:=</span><span class="m">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span> <span class="n">cols</span> <span class="p">;</span><span class="n">j</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">copyArr</span><span class="p">[</span><span class="m">0</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+			<span class="n">Union</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">size</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="c">// step2. 构造剩下砖块的并查关系</span>
+	<span class="k">for</span> <span class="n">i</span><span class="o">:=</span><span class="m">1</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">rows</span><span class="p">;</span><span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="n">j</span><span class="o">:=</span><span class="m">0</span><span class="p">;</span><span class="n">j</span><span class="o">&lt;</span><span class="n">cols</span><span class="p">;</span><span class="n">j</span><span class="o">++</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="n">copyArr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="n">copyArr</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="m">1</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+					<span class="n">Union</span><span class="p">(</span><span class="n">getIndex</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="m">1</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">getIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+				<span class="p">}</span>
+				<span class="k">if</span> <span class="n">j</span><span class="o">&gt;</span><span class="m">0</span> <span class="o">&amp;&amp;</span> <span class="n">copyArr</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="m">1</span><span class="p">]</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+					<span class="n">Union</span><span class="p">(</span><span class="n">getIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="m">1</span><span class="p">),</span><span class="n">getIndex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">))</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>接下来就是把被打碎的砖块<strong>“补”</strong>回去了</p>
+
+    <p>我们只需要<strong>倒着遍历</strong>输入进来的 <code class="language-plaintext highlighter-rouge">hits</code> 数组，</p>
+
+    <p>然后得到每一步操作前后的<strong>集合秩之差</strong>，</p>
+
+    <p>即可得到每次操作的结果</p>
+  </li>
+</ol>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="c">// step3. 遍历整个打碎后的网格</span>
+   <span class="c">// 把砖块一步步填回去</span>
+   <span class="k">for</span> <span class="n">i</span><span class="o">:=</span> <span class="n">hitsLen</span><span class="o">-</span><span class="m">1</span><span class="p">;</span><span class="n">i</span><span class="o">&gt;=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="o">--</span> <span class="p">{</span>
+      <span class="c">// 得到当前这个被打碎砖块的坐标</span>
+      <span class="n">x</span> <span class="o">:=</span> <span class="n">hits</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="m">0</span><span class="p">]</span>
+      <span class="n">y</span> <span class="o">:=</span> <span class="n">hits</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="m">1</span><span class="p">]</span>
+      <span class="c">// 本来没有砖块，我们跳过这个网格</span>
+      <span class="k">if</span> <span class="n">grid</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]</span> <span class="o">==</span> <span class="m">0</span> <span class="p">{</span>
+         <span class="k">continue</span>
+      <span class="p">}</span>
+
+      <span class="c">// 得到当前这个集合打碎前后的秩</span>
+      <span class="n">origin</span> <span class="o">:=</span> <span class="n">getSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+
+      <span class="c">// 如果是屋顶的砖块</span>
+      <span class="k">if</span> <span class="n">x</span><span class="o">==</span><span class="m">0</span> <span class="p">{</span>
+         <span class="n">Union</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+      <span class="p">}</span>
+      <span class="k">var</span> <span class="p">(</span>
+         <span class="n">MVX</span> <span class="o">=</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">int</span><span class="p">{</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="o">-</span><span class="m">1</span><span class="p">}</span>
+         <span class="n">MVY</span> <span class="o">=</span> <span class="p">[</span><span class="m">4</span><span class="p">]</span><span class="kt">int</span><span class="p">{</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="o">-</span><span class="m">1</span><span class="p">,</span><span class="m">0</span><span class="p">}</span>
+      <span class="p">)</span>
+
+      <span class="k">for</span> <span class="n">k</span><span class="o">:=</span><span class="m">0</span><span class="p">;</span><span class="n">k</span><span class="o">&lt;</span><span class="m">4</span><span class="p">;</span><span class="n">k</span><span class="o">++</span> <span class="p">{</span>
+         <span class="n">newX</span> <span class="o">:=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">MVX</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+         <span class="n">newY</span> <span class="o">:=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">MVY</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+         <span class="k">if</span> <span class="n">inArea</span><span class="p">(</span><span class="n">newX</span><span class="p">,</span><span class="n">newY</span><span class="p">)</span><span class="o">&amp;&amp;</span> <span class="n">copyArr</span><span class="p">[</span><span class="n">newX</span><span class="p">][</span><span class="n">newY</span><span class="p">]</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+            <span class="n">Union</span><span class="p">(</span><span class="n">getIndex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span><span class="n">getIndex</span><span class="p">(</span><span class="n">newX</span><span class="p">,</span><span class="n">newY</span><span class="p">))</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+
+      <span class="c">// 得到当前这个集合打碎前的秩</span>
+      <span class="n">current</span> <span class="o">:=</span> <span class="n">getSize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+      <span class="k">if</span> <span class="n">current</span> <span class="o">-</span> <span class="n">origin</span><span class="o">-</span><span class="m">1</span> <span class="o">&lt;</span> <span class="m">0</span> <span class="p">{</span>
+         <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span><span class="m">0</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+         <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">current</span> <span class="o">-</span> <span class="n">origin</span> <span class="o">-</span><span class="m">1</span>
+      <span class="p">}</span>
+      <span class="c">// 补上这个砖块</span>
+      <span class="n">copyArr</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="m">1</span>
+      <span class="p">}</span>
+</code></pre></div></div>
+<h3 id="分析">分析</h3>
+
+<ul>
+  <li>这道题告诉我们，当正向思维无法解决问题时，可以尝试<strong>逆向思维</strong>。</li>
+  <li>分析复杂度：
+    <ul>
+      <li>时间复杂度：<code class="language-plaintext highlighter-rouge">O(len(hits)+rows*cols)</code></li>
+      <li>空间复杂度：<code class="language-plaintext highlighter-rouge">O(rows*cols)</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="完整代码">完整代码</h3>
+
+<p>完整的代码已经上传到仓库上，如果你有更加neaty的实现，欢迎贡献哦👏～</p>
+
+<p><a href="https://github.com/Xpectuer/alGO/blob/released/UnionFind/803.HitBricks.go">源码地址</a></p>
+
+<h3 id="ref">REF</h3>
+
+<p>https://leetcode-cn.com/problems/bricks-falling-when-hit/solution/803-da-zhuan-kuai-by-leetcode-r5kf/</p>
+
+<p>https://en.wikipedia.org/wiki/Disjoint-set_data_structure</p>
+
+
+
+  <small>tags: <em>algorithm</em> - <em>disjointSet</em></small>
+
+
+      </section>
+    </div>
+
+    
+  </body>
+</html>

@@ -27,9 +27,29 @@ github_username:  Xpectuer
 
 # Build settings
 markdown: kramdown
-theme: minima
+theme: jekyll-theme-hacker
 plugins:
   - jekyll-feed
+  - jekyll-paginate
+
+defaults:
+    scope:
+      path: ""
+      type: "post"
+    values:
+        layout: "post"
+     
+
+
+# paginate conf
+# pagination:
+#   enabled: true
+#   per_page: 2
+#   permalink: '/page/:num/'
+#   title: '- page :num'
+#   limit: 0
+#   sort_field: 'date'
+#   sort_reverse: true
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list

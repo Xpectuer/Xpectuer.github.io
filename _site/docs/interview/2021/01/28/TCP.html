@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>TCP基础</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="TCP基础" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/docs/interview/2021/01/28/TCP.html" />
+<meta property="og:url" content="http://localhost:4000/docs/interview/2021/01/28/TCP.html" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-28T00:00:00+08:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="TCP基础" />
+<script type="application/ld+json">
+{"datePublished":"2021-01-28T00:00:00+08:00","dateModified":"2021-01-28T00:00:00+08:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/docs/interview/2021/01/28/TCP.html"},"url":"http://localhost:4000/docs/interview/2021/01/28/TCP.html","headline":"TCP基础","@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1></h1>
+        </a>
+        <h2></h2>
+
+        <section id="downloads">
+          
+          <a href="" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>28 January 2021</small>
+<h1>TCP基础</h1>
+
+<p class="view">by </p>
+
+<hr />
+
+<h1 id="计算机网络tcp基本原理">【计算机网络】TCP基本原理</h1>
+
+<h3 id="三次握手three-way-handshake">三次握手🤝？（three-way handshake）</h3>
+
+<ul>
+  <li>
+    <p>三次握手是TCP的Client与Server<strong>建立连接</strong>时的协议，具体流程如下：</p>
+
+    <ul>
+      <li>
+        <p>第一次握手： 将SYN置为1，<strong>随机</strong>产生一个<strong>初始序列号Seq</strong>发送给server，进入SYN_SENT状态。</p>
+      </li>
+      <li>
+        <p>第二次握手：Server收到SYN=1，将自己 的SYN=1，ACK=1，产生一个<strong>ACK number = J+1</strong>，随机产生一个自己的初始序列号Seq=K，发送给客户端</p>
+      </li>
+      <li>
+        <p>第三次握手：Client首先检查<strong>ACK number</strong>（ack）是否为Seq+1，（J+1），ACK是否为1，若检查通过，将产生一个ACK number（ack）= K+1，即第二次握手发送过来的seq+1，发送到Server。</p>
+
+        <p>随后，Client进入ESTABLISHED状态，Server收到报文后，也进入ESTABLISHED状态。</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p><img src="/assets/interviews/network/tcp/3-way.png" alt="20191129101827556_21212" /></p>
+
+<h4 id="tcp建立连接是否可以只进行两次握手">TCP建立连接是否可以只进行两次握手？</h4>
+
+<p>不可以，</p>
+
+<ol>
+  <li>
+    <p>失效的报文段可能会又一次传到服务端。</p>
+  </li>
+  <li>
+    <p>无法保证Client正确接收第二次握手的报文（Server无法确认其是否收到），也无法保证Client和Server间成功互换初始序列号。</p>
+  </li>
+</ol>
+
+<blockquote>
+  <p>Client第一次发送的报文在网络中滞留，以至于直到<strong>Client端连接释放</strong>才到达Server。如果没有第三次握手，Server发送确认后会<strong>持续等待</strong>Client端发送数据，然而此时Client端连接早已释放，通信资源就会白白浪费</p>
+</blockquote>
+
+<h4 id="是否可以采用四次挥手">是否可以采用四次挥手</h4>
+
+<p>可行，但是没有必要</p>
+
+<p>我们知道，网络由于其相对于总线的<strong>高延迟</strong>，</p>
+
+<p>往往是一个系统的瓶颈。</p>
+
+<p>设计四次挥手也就是将原来第二次挥手的（见上图）</p>
+
+<ul>
+  <li>ACK与ack number</li>
+  <li>SYN与Seq</li>
+</ul>
+
+<p>分开发送，由于都是从Server端发送的，我们可以用一套逻辑将其一次性发送。</p>
+
+<p>多次发送网络包容易不仅性能上会出现损失，而且会出现更多繁复的丢包等预期外问题。</p>
+
+<p>这才有了三次挥手而不是四次挥手。</p>
+
+<h4 id="第三次握手中如果客户端的ack未送达服务器会如何">第三次握手中，如果客户端的ACK未送达服务器，会如何？</h4>
+
+<p>Server端：</p>
+
+<p>由于没有收到ACK确认，会重发SYN+ACK（第二次握手）的包</p>
+
+<p>（默认重发5次，超过这个上限会关闭连接并进入CLOSED状态）</p>
+
+<p>Client收到后会重传ACK到Server</p>
+
+<p>Client端：</p>
+
+<ol>
+  <li>
+    <p>如果Server超时重发的过程中，收到了Client的ACK，</p>
+
+    <p>如果ACK=1，服务器会读取ack number，并进入ESTABLISHED状态。</p>
+
+    <ol>
+      <li>在Server进入CLOSED状态后收到Client的ACK包，Server会以RST包应答。（RST标示复位、用来异常的关闭连接）</li>
+    </ol>
+
+    <blockquote>
+      <ol>
+        <li>
+          <p>发送RST包关闭连接时，不必等缓冲区的包都发出去，直接就丢弃缓冲区中的包，发送RST。</p>
+
+          <ol>
+            <li>而接收端收到RST包后，也不必发送ACK包来确认。</li>
+          </ol>
+        </li>
+      </ol>
+    </blockquote>
+  </li>
+</ol>
+
+<h4 id="如果已经建立了连接但是客户端故障怎么办">如果已经建立了连接，但是客户端故障怎么办？</h4>
+
+<p>Server端每次收到Client端请求时，都会重新复位一个计时器，通常是2小时，如果这个门限之内没有收到任何数据，Server端就发送一个探测报文段，每隔75秒发送一次。如果一连10个报文端仍然没有反应，就认为客户端出了故障，随后关闭连接。</p>
+
+<h4 id="什么是初始序列号isn">什么是初始序列号ISN</h4>
+
+<p>发起TCP连接的一方A，<strong>随机选择一个32位的序列号</strong>作为发送数据的<strong>初始序列号</strong>（Initial Sequence Number，ISN），假设ISN=1000那么以此序列号位原点，对要传送的数据进行编号：1001，1002…</p>
+
+<p>三次握手时，双方把初始序列号传送给对方（Seq），以便在数据传送时，A还可以确认B收到的每一个字节，如果A收到了B的确认编号是2001，则认为1001-2000的数据已经被B成功接受。</p>
+
+<h3 id="四次挥手gracefully-close">四次挥手🙋（Gracefully Close）</h3>
+
+<ul>
+  <li>
+    <p>第一次挥手，Client将FIN置为1，发送一个序列号M给server；进入FIN_WAIT_1状态</p>
+  </li>
+  <li>
+    <p>第二次挥手：Server收到FIN之后，发送一个ACK=1，ack number=收到的序列号+1；进入CLOSE_WAIT状态。此时客户端已经没有要发送的数据，但是仍然可以接受服务器发来的数据。</p>
+  </li>
+  <li>
+    <p>第三次挥手：Server将FIN置为1，发送一个序列号N给Client，进入LAST_ACK状态（目的就是接收所有从客户端发送但是未到达并被服务端处理的数据包）</p>
+  </li>
+  <li>
+    <p>第四次挥手：Client收到服务端的FIN后，进入TIME_WAIT状态；接着ACK=1，发送一个ack number=序列号+1给服务端；服务端收到后，确认acknowledge number后，变为CLOSED状态，不再向Client发送数据。Server 等待2*MSL（报文段最长寿命），也进入CLOSE状态。完成四次挥手</p>
+
+    <p><img src="/assets/interviews/network/tcp/4-way-waving.png" alt="4-way-waving" /></p>
+  </li>
+</ul>
+
+<h4 id="为什么服务器发送ack和fin不能合并在一起close_wait的意义">为什么服务器发送ACK和FIN不能合并在一起？（CLOSE_WAIT的意义）</h4>
+
+<p>等待还到达和未被处理的数据包，此时Server会发送ACK，表示接受到了断开连接的请求。等到数据发完后发FIN，断开服务器到客户端的数据传送。</p>
+
+<h4 id="如果第二次挥手服务器ack没有到达客户端会如何">如果第二次挥手服务器ACK没有到达客户端，会如何？</h4>
+
+<p>Client没有收到ACK确认，重传FIN请求</p>
+
+<h4 id="客户端time_wait状态意义是什么">客户端TIME_WAIT状态意义是什么</h4>
+
+<p>第四次挥手时，Client发给Server的ACK可能会丢失，TIME_WAIT状态时保证Client可以重发可能丢失的ACK报文。如果Server没有收到ACK，就会重发FIN</p>
+
+<ul>
+  <li>
+    <p>如果Client在2*MSL收到了FIN，再等待一个2*MSL的计时⌛️，防止Server没有收到ACK而不断重发FIN。</p>
+
+    <blockquote>
+      <p>MSL(Maximum Segment Lifetime)，指一个片段在网络中最大的存活时间，2MSL就是一个发送和一个回复所需的最大时间。如果直到2MSL，Client都没有再次收到FIN，那么Client推断ACK已经被成功接收，则结束TCP连接。</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>假如没有TIME_WAIT状态，即Client发送ACK后直接关闭连接</p>
+
+    <p>那么如果客户端想要再次与同一个Server建立连接，而这种情况实际上非常常见。</p>
+
+    <p>假设此时Server没有收到ACK，而是阻塞在LAST_ACK状态；而Client早早地关闭了连接（再也不会发ACK）。</p>
+
+    <p>这样就会导致Server资源不能被释放，可能导致内存溢出。</p>
+
+    <blockquote>
+      <p>这里就有一个问题，假如我TIME_WAIT设置在Server端是否也是可行的？也就是指，Server对Client的ACK请求进行超时等待，超时关闭连接是否可行？</p>
+    </blockquote>
+  </li>
+</ul>
+
+<h3 id="流量控制flow-control">流量控制（Flow Control）</h3>
+
+<p>观察TCP报文头可以发现，存在“窗口”字段。</p>
+
+<p><img src="/Users/alex/noobi.github.io/docs/assets/interviews/network/tcp/tcphead.png" alt="tcphead" /></p>
+
+<p>TCP使用滑动窗口实现流量控制。</p>
+
+<p><strong>接收方</strong>维护一个receiver window（单位是字节），接受窗口的大小是根据自己的资源情况动态调整的，在返回ACK时将receiver window大小放在TCP报文中的窗口字段并告知<strong>发送方</strong>。</p>
+
+<ul>
+  <li>发送窗口的大小不能超过接受窗口的大小</li>
+  <li>发送方发送并收到确认后，才能将窗口滑动</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>send_window = min(receiver_window, congestion_window)
+</code></pre></div></div>
+
+<p>接受窗口（receiver_window）表明接收方的接收能力</p>
+
+<p>拥塞窗口（congestion_window）表明网络的传送能力</p>
+
+<h4 id="什么是零窗口">什么是零窗口</h4>
+
+<p>表明接收方没有能力接收数据，就会将receiver_window设置为0，此时发送方必须暂停发送数据，但是会启动一个持续计时器（persistence timer）。</p>
+
+<p>到期后发送一个大小为1byte 的<strong>探测数据包</strong>，以查看接收窗口的状态。如果接收方能够接收数据，就会在返回报文中更新接收窗口的大小，恢复数据传送。</p>
+
+<h4 id="拥塞控制">拥塞控制：</h4>
+
+<blockquote>
+  <p>注意，接下来四个算法的最小单位都是一个MSS（最大报文段Maximum Segment Size）的数值</p>
+</blockquote>
+
+<ul>
+  <li>
+    <p>慢启动（Slow Start）</p>
+  </li>
+  <li>
+    <p>拥塞避免（Congestion voidance）</p>
+  </li>
+  <li>
+    <p>快重传 （Fast Retransmit）</p>
+  </li>
+  <li>
+    <p>快恢复（Fast Recovery）</p>
+
+    <p><img src="/Users/alex/noobi.github.io/docs/assets/interviews/network/tcp/flow_control.png" alt="flow_control" /></p>
+  </li>
+</ul>
+
+<ol>
+  <li>
+    <p><strong>慢启动</strong>：</p>
+
+    <p>刚开始发送时，先把congestion window设置为一个最大报文段 的数值，没收到一个新的确认报文之后，就把congestion window+1（MSS）。每经过一个RTT（Round-trip time），congestion window 大小加倍。</p>
+
+    <p>总体来看，在慢启动算法中，congestion window呈现<strong>指数增长</strong>。</p>
+  </li>
+  <li>
+    <p><strong>拥塞避免</strong>：</p>
+
+    <p>当<strong>congestion window</strong>大小到达<strong>ssthresh</strong>（slow start threshold）时，开始执行<strong>拥塞避免</strong>算法，congestion window开始线性增长，即每经过一个传输轮次增加一个1个MSS</p>
+
+    <blockquote>
+      <p>无论在慢开始阶段还是在拥塞避免阶段，只要发送方判断网络出现拥塞（其根据就是没有收到确认），就要把慢开始门限ssthresh设置为出现拥塞时的发送方窗口值的<strong>一半</strong>（但不能小于2）。然后把拥塞窗口congestion window（cwnd）重新设置为1，执行慢开始算法。<strong>（这是不使用快重传的情况）</strong></p>
+    </blockquote>
+  </li>
+  <li>
+    <p><strong>快重传</strong>：</p>
+
+    <p>要求接收方在收到一个失序的报文段后就立刻发出 <strong>重复确认</strong> （为的是使发送方尽早知道有报文段没有到达对方）而不是等发送方发送时捎带确认信息。</p>
+
+    <p>快重传算法规定，发送方只要一连收到三个重复确认就应当立即重传对方尚未收到的报文段，而不必继续等待设置的重传计时器时间到期。</p>
+
+    <blockquote>
+      <p>也有的快重传是把开始时的拥塞窗口cwnd值再增大一点，即等于 ssthresh + 3*MSS 。这样做的理由是：既然发送方收到三个重复的确认，就表明有三个分组已经离开了网络。这三个分组不再消耗网络的资源而是停留在接收方的缓存中。可见现在网络中减少了三个分组。因此可以适当把拥塞窗口扩大些。</p>
+    </blockquote>
+  </li>
+</ol>
+
+<p><img src="/Users/alex/noobi.github.io/docs/assets/interviews/network/tcp/fast_retransmit.png" alt="fast_retransmit" /></p>
+
+<ol>
+  <li>
+    <p>快恢复：</p>
+
+    <p>当发送方连续收到三个重复确认时，就把慢开始门限ssthresh减半，不减小congestion window，然后执行拥塞避免算法。</p>
+
+    <p><strong>不执行慢开始算法的原因是</strong>，如果网络出现拥塞的话就不会收到好几个重复的确认，所以发送方认为现在的网络可能没有出现拥塞。</p>
+  </li>
+</ol>
+
+<h4 id="tcp如何保证传输的可靠性">TCP如何保证传输的可靠性</h4>
+
+<ol>
+  <li>数据包校验</li>
+  <li>对失序数据包重新排序（带Seq序列号）</li>
+  <li>丢弃重复数据</li>
+  <li>应答机制：收到数据后发送确认包</li>
+  <li>超时重发：发送方发出数据后，启动定时器，超时未收到确认，<strong>将会重新发送数据包</strong></li>
+  <li>流量控制：确保接收端缓冲区不会因发送过快而溢出。</li>
+</ol>
+
+<h3 id="tcp与udp的区别">TCP与UDP的区别</h3>
+
+<ol>
+  <li>
+    <p>TCP是<strong>面向连接</strong>/<strong>面向字节流</strong>的，UDP是<strong>无连接</strong>/<strong>面向报文</strong>的。</p>
+
+    <p>TCP在发送数据前需要三次握手建立连接，而UDP不需要。</p>
+
+    <p>UDP：</p>
+
+    <ol>
+      <li>无论应用层交给UDP多长的报文，UDP照样发送。</li>
+      <li>应用程序必须选择合适大小的报文，如果太长，在IP层则需要分片；如果太短，UDP会保留边界（类似于内存块补0）</li>
+    </ol>
+
+    <p>TCP：</p>
+
+    <ol>
+      <li>
+        <p>TCP把上层数据报文看作是一串无结构的字节流。</p>
+      </li>
+      <li>
+        <p>TCP有缓冲，会把数据分像串流一样发送</p>
+      </li>
+      <li>
+        <p>如果上层发送一个字节，TCP会等待积累足够多的字节后构成报文段发送出去。</p>
+
+        <p><img src="/Users/alex/noobi.github.io/docs/assets/interviews/network/tcp/comparison.jpg" alt="comparison" /></p>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<h4 id="为什么udp不可靠">为什么UDP不可靠</h4>
+
+<p>UDP的接收方收到报文后，不需要发送确认报文给发送方。</p>
+
+<h4 id="tcpudp选择问题">TCP/UDP选择问题</h4>
+
+<p>对于一些实时性比较高的状况可以选择UDP，比如游戏、直播、网络电话（一对多）等。</p>
+
+<p>当需要传输可靠内容时，需要用到TCP。</p>
+
+<h4 id="http可以使用udp吗">HTTP可以使用UDP吗</h4>
+
+<p>不可以，在HTTP标准中规定，HTTP需要基于可靠连接。</p>
+
+<p>以下，<a href="https://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a></p>
+
+<blockquote>
+  <p>HTTP only presumes a reliable transport; any protocol that provides such guarantees can be used…</p>
+</blockquote>
+
+<h4 id="面向连接和无连接有什么区别">面向连接和无连接有什么区别？</h4>
+
+<p>无连接的网络服务（数据报服务）– 面向连接的网络服务（虚电路服务）</p>
+
+<p>虚电路服务：首先建立连接，所有的数据包经过相同的路径，服务质量有较好的保证；</p>
+
+<p>数据报服务：每个数据包含目的地址，数据路由相互独立（路径可能变化）；<strong>网络尽最大努力交付数据</strong>，但不保证不丢失、不保证先后顺序、不保证在时限内交付；网络发生拥塞时，可能会将一些<strong>分组丢弃</strong>；</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>虚电路</th>
+      <th>数据报</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>需要建立连接</td>
+      <td>需要</td>
+      <td>不需要</td>
+    </tr>
+    <tr>
+      <td>分组中的目的地址</td>
+      <td>VC标识（路由器转发表）</td>
+      <td>完整地址</td>
+    </tr>
+    <tr>
+      <td>链路选择</td>
+      <td>建立时选择路径，所有分组路由相同</td>
+      <td>独立选择路径</td>
+    </tr>
+    <tr>
+      <td>路由器故障的影响</td>
+      <td>经过该路由器的vc都将终止</td>
+      <td>几乎不受影响</td>
+    </tr>
+    <tr>
+      <td>拥塞控制</td>
+      <td>易于实现</td>
+      <td>很难实现</td>
+    </tr>
+    <tr>
+      <td>差错控制和流量控制</td>
+      <td>由子网负责</td>
+      <td>由主机负责</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>由于TCP底层由IP协议实现，因此<strong>不能称作是虚电路实现</strong>。</p>
+
+
+
+
+  <small>tags: <em>network</em> - <em>interview</em></small>
+
+
+      </section>
+    </div>
+
+    
+  </body>
+</html>

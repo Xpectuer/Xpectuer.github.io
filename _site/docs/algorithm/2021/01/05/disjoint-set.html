@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>聊聊并查集（Disjoin Set）</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="聊聊并查集（Disjoin Set）" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="并查集（Disjoint Set 分立集合 Union Find）" />
+<meta property="og:description" content="并查集（Disjoint Set 分立集合 Union Find）" />
+<link rel="canonical" href="http://localhost:4000/docs/algorithm/2021/01/05/disjoint-set.html" />
+<meta property="og:url" content="http://localhost:4000/docs/algorithm/2021/01/05/disjoint-set.html" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-05T00:00:00+08:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="聊聊并查集（Disjoin Set）" />
+<script type="application/ld+json">
+{"datePublished":"2021-01-05T00:00:00+08:00","dateModified":"2021-01-05T00:00:00+08:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/docs/algorithm/2021/01/05/disjoint-set.html"},"description":"并查集（Disjoint Set 分立集合 Union Find）","url":"http://localhost:4000/docs/algorithm/2021/01/05/disjoint-set.html","headline":"聊聊并查集（Disjoin Set）","@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1></h1>
+        </a>
+        <h2></h2>
+
+        <section id="downloads">
+          
+          <a href="" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>5 January 2021</small>
+<h1>聊聊并查集（Disjoin Set）</h1>
+
+<p class="view">by </p>
+
+<h2 id="并查集disjoint-set-分立集合-union-find">并查集（Disjoint Set 分立集合 Union Find）</h2>
+
+<p>并查集的概念比较跳跃，应当<strong>独立记忆</strong></p>
+
+<h3 id="效用">效用</h3>
+
+<p>并查集解决了独立集合之间的查找与合并问题</p>
+
+<p><em>并查集一般可以解决具有传递性关系的问题</em></p>
+
+<p>比如：</p>
+
+<ol>
+  <li>朋友圈问题</li>
+  <li>岛屿个数问题</li>
+  <li>编译器变量多个引用问题</li>
+</ol>
+
+<p>实现一个Union Find需要以下的API</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">interface</span> <span class="nc">UF</span> <span class="o">{</span>
+    <span class="cm">/* 将 p 和 q 连接 */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">union</span><span class="o">(</span><span class="kt">int</span> <span class="n">p</span><span class="o">,</span> <span class="kt">int</span> <span class="n">q</span><span class="o">);</span>
+    <span class="cm">/* 判断 p 和 q 是否连通 */</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">connected</span><span class="o">(</span><span class="kt">int</span> <span class="n">p</span><span class="o">,</span> <span class="kt">int</span> <span class="n">q</span><span class="o">);</span>
+    <span class="cm">/* 返回图中有多少个连通分量 */</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">count</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="初始化">初始化</h3>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// iterative</span>
+<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">:</span> <span class="n">parent</span><span class="p">)</span>
+	<span class="n">parent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+</code></pre></div></div>
+
+<p>此时每个元素都是集合的<strong>领头元素</strong>，即每个元素独立成一个集合。</p>
+
+<h3 id="查找领头元素find">查找领头元素（Find）</h3>
+
+<p>为了更好的合并，我们需要找到每个分立集合的<strong>领头元素</strong></p>
+
+<p>我们分别用递归和迭代的方式实现</p>
+
+<ul>
+  <li>
+    <p>迭代</p>
+
+    <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">find</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">root</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+  <span class="k">while</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="o">!=</span> <span class="n">root</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">root</span><span class="p">];</span>
+  <span class="p">}</span>
+  <span class="c1">// root found</span>
+  <span class="c1">// route compression</span>
+  <span class="k">while</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">!=</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">x</span><span class="o">=</span><span class="n">i</span><span class="p">;</span><span class="n">i</span><span class="o">=</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">];</span><span class="n">p</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">=</span><span class="n">root</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>递归</p>
+
+    <div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// NO route compression</span>
+<span class="kt">int</span> <span class="nf">find</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">i</span><span class="o">==</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">?</span><span class="n">i</span><span class="o">:</span><span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h3 id="合并union">合并（Union）</h3>
+
+<p><img src="/assets/algo/disjointSet/union.png" alt="union" /></p>
+
+<ul>
+  <li>找到各个集合的<strong>领头元素</strong></li>
+  <li>合并两个领头元素</li>
+</ul>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 还可以优化</span>
+<span class="kt">void</span> <span class="nf">union</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="kt">int</span> <span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">rootI</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+  <span class="kt">int</span> <span class="n">rootJ</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">j</span><span class="p">);</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">rootI</span><span class="o">==</span><span class="n">rootJ</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+  <span class="c1">// p[rootJ] = rootI; // 等效</span>
+  <span class="n">p</span><span class="p">[</span><span class="n">rootI</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootJ</span><span class="p">;</span>
+  <span class="n">count</span><span class="o">--</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="问题优化">问题&amp;优化</h4>
+
+<p>既然是合并集合树，那么必定会出现如：</p>
+
+<ol>
+  <li>
+    <p><strong>退化为链表</strong></p>
+  </li>
+  <li>
+    <p>左右子树不平衡</p>
+  </li>
+</ol>
+
+<p>这种降低<strong>查询效率</strong>与<strong>路径压缩效率</strong>的问题</p>
+
+<ul>
+  <li>优化：保持的UF的平衡性
+    <ul>
+      <li>尽量不让小树的头作为领头元素</li>
+    </ul>
+  </li>
+</ul>
+
+<p>那么如何判断树的大小呢？</p>
+
+<p>我们维护一个与<code class="language-plaintext highlighter-rouge">p[n] //parent</code>同样大小的<code class="language-plaintext highlighter-rouge">size[n]</code> 数组</p>
+
+<p><code class="language-plaintext highlighter-rouge">size</code> 内的元素维护每个元素的子节点个数</p>
+
+<p>看代码:</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">UF</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">parent</span><span class="p">;</span>
+    <span class="c1">// 新增一个数组记录树的“重量”</span>
+		<span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">size</span><span class="p">;</span>
+<span class="nl">public:</span>
+  	<span class="n">UF</span><span class="p">(</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+        <span class="c1">// 最初每棵树只有一个节点</span>
+        <span class="c1">// 重量应该初始化 1</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">parent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="err">；</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+  	<span class="kt">void</span> <span class="k">union</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="kt">int</span> <span class="n">j</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kt">int</span> <span class="n">rootI</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+      <span class="kt">int</span> <span class="n">rootJ</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">j</span><span class="p">);</span>
+      <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="n">rootI</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">[</span><span class="n">rootJ</span><span class="p">])</span> <span class="p">{</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">rootJ</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootI</span><span class="p">;</span>
+        <span class="n">size</span><span class="p">[</span><span class="n">rootI</span><span class="p">]</span> <span class="o">+=</span> <span class="n">size</span><span class="p">[</span><span class="n">rootQ</span><span class="p">];</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">rootI</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootJ</span><span class="p">;</span>
+        <span class="n">size</span><span class="p">[</span><span class="n">rootJ</span><span class="p">]</span> <span class="o">+=</span> <span class="n">size</span><span class="p">[</span><span class="n">rootI</span><span class="p">];</span>
+      <span class="p">}</span>
+      <span class="n">count</span><span class="o">--</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+    <span class="cm">/* 其他函数 */</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="例题">例题</h3>
+
+<h4 id="leetcode547-province-numbers">leetcode547. Province Numbers</h4>
+
+<p>这道题类似于岛屿数量，可以用DFS做</p>
+
+<p>但是这里用并查集可以减少运算的复杂度</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Solution</span> <span class="p">{</span>
+<span class="nl">private:</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">parent</span><span class="p">;</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">size</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">find</span><span class="p">(</span><span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">p</span><span class="o">==</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">?</span><span class="n">p</span><span class="o">:</span><span class="n">find</span><span class="p">(</span><span class="n">parent</span><span class="p">[</span><span class="n">p</span><span class="p">]);</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">_union</span><span class="p">(</span><span class="kt">int</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">q</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">rootP</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">rootQ</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">q</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rootP</span><span class="o">==</span><span class="n">rootQ</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+        <span class="c1">//opt</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="n">rootP</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">[</span><span class="n">rootQ</span><span class="p">])</span> <span class="p">{</span>
+            <span class="n">parent</span><span class="p">[</span><span class="n">rootQ</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootP</span><span class="p">;</span>
+            <span class="n">size</span><span class="p">[</span><span class="n">rootP</span><span class="p">]</span> <span class="o">+=</span> <span class="n">size</span><span class="p">[</span><span class="n">rootQ</span><span class="p">];</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">parent</span><span class="p">[</span><span class="n">rootP</span><span class="p">]</span> <span class="o">=</span> <span class="n">rootQ</span><span class="p">;</span>
+            <span class="n">size</span><span class="p">[</span><span class="n">rootQ</span><span class="p">]</span> <span class="o">+=</span> <span class="n">size</span><span class="p">[</span><span class="n">rootP</span><span class="p">];</span>
+        <span class="p">}</span>
+        <span class="c1">//cout&lt;&lt;this-&gt;count&lt;&lt;endl;</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">count</span><span class="o">--</span><span class="p">;</span>
+    <span class="p">}</span>
+
+<span class="nl">public:</span>
+    <span class="kt">int</span> <span class="n">findCircleNum</span><span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;&amp;</span> <span class="n">M</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">M</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">n</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+
+        <span class="cm">/*INITIALIZATION*/</span>
+        <span class="k">this</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">=</span> <span class="n">n</span><span class="p">;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">n</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">parent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="cm">/*INITIALIZATION*/</span>
+
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">M</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">){</span>
+                    <span class="c1">//cout&lt;&lt;count&lt;&lt;endl;</span>
+                    <span class="n">_union</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">);</span>
+                <span class="p">}</span>
+
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">count</span><span class="p">;</span>
+    <span class="p">}</span>
+
+
+<span class="p">};</span>
+
+</code></pre></div></div>
+<h3 id="进阶练习推荐">进阶练习推荐</h3>
+
+<blockquote>
+  <p>记住，并查集一般可以解决具有传递性关系的问题</p>
+</blockquote>
+
+<p><a href="https://leetcode-cn.com/problems/evaluate-division/">399. Evaluate Division</a><br />
+PAT 2020.12 第4题 化学反应方程式</p>
+
+
+
+  <small>tags: <em>tree,</em> - <em>special</em> - <em>data</em> - <em>structure</em></small>
+
+
+      </section>
+    </div>
+
+    
+  </body>
+</html>

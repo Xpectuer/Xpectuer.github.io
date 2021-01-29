@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=">
+
+<!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>教你用汇编语言写一个Hello World</title>
+<meta name="generator" content="Jekyll v3.9.0" />
+<meta property="og:title" content="教你用汇编语言写一个Hello World" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="教你用汇编语言写一个Hello World" />
+<meta property="og:description" content="教你用汇编语言写一个Hello World" />
+<link rel="canonical" href="http://localhost:4000/docs/programming/2020/11/15/asm-hello-word.html" />
+<meta property="og:url" content="http://localhost:4000/docs/programming/2020/11/15/asm-hello-word.html" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-11-15T00:00:00+08:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="教你用汇编语言写一个Hello World" />
+<script type="application/ld+json">
+{"datePublished":"2020-11-15T00:00:00+08:00","dateModified":"2020-11-15T00:00:00+08:00","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/docs/programming/2020/11/15/asm-hello-word.html"},"description":"教你用汇编语言写一个Hello World","url":"http://localhost:4000/docs/programming/2020/11/15/asm-hello-word.html","headline":"教你用汇编语言写一个Hello World","@type":"BlogPosting","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <a id="a-title" href="/">
+          <h1></h1>
+        </a>
+        <h2></h2>
+
+        <section id="downloads">
+          
+          <a href="" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <small>15 November 2020</small>
+<h1>教你用汇编语言写一个Hello World</h1>
+
+<p class="view">by </p>
+
+<h1 id="教你用汇编语言写一个hello-world">教你用汇编语言写一个Hello World</h1>
+
+<h3 id="平台">平台</h3>
+
+<p>OS: Ubuntu 18.04 STL</p>
+
+<p><strong>Platform: i386</strong></p>
+
+<p>Editor：<strong>vim</strong></p>
+
+<h3 id="get-started">Get Started</h3>
+
+<p>我们知道，高级语言的源码文件都有自己的格式，比如，C的后缀：.c ，java的后缀： .java ， C++的后缀：.cpp等等。</p>
+
+<p>在汇编语言程序设计时，我们采用 .asm后缀的格式（代表assembly）来编辑源码。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim hello_world.asm
+</code></pre></div></div>
+
+<h3 id="编辑源码">编辑源码</h3>
+
+<p>在i386汇编中，不同的section有不同的作用，</p>
+
+<p>它们在被打包成<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">elf文件</a>时被<strong>链接（linked）</strong></p>
+
+<p><img src="/assets/programming/image/279759ee3d6d55fb68df1ab16f224f4a20a4dd08.jpeg" alt="elf" /></p>
+
+<blockquote>
+  <p>.asm文件中， 表示注释采用 <code class="language-plaintext highlighter-rouge">;</code> 符号</p>
+</blockquote>
+
+<p>我们来看一下要用到的代码块（section）：</p>
+
+<pre><code class="language-assembly">section .text:
+</code></pre>
+
+<p>.text区域存放<strong>所有将会被执行的指令</strong></p>
+
+<pre><code class="language-assembly">section .data:
+</code></pre>
+
+<p>.data区域存放用户自定义的<strong>变量</strong></p>
+
+<h4 id="变量">变量</h4>
+
+<p>接下来，我们在<code class="language-plaintext highlighter-rouge">.data</code>中定义需要输出的变量</p>
+
+<pre><code class="language-assembly">section .data:
+		message: db "Hello World!" , 0xA
+		message_length equ $-message
+</code></pre>
+
+<p>解释一下这段代码：我们定义了一个变量叫做 <code class="language-plaintext highlighter-rouge">message</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">db</code> 意思是 define byte，这相当于某些高级语言的类型声明，只不过这里更像是一个<strong>函数调用（function call）</strong>，因为<strong>有参数紧跟其后</strong> 。</p>
+
+<p>我们 输入我们自定义的值：<code class="language-plaintext highlighter-rouge">"Hello World!"</code></p>
+
+<p>这相当于第一个参数。</p>
+
+<p>输入第二个参数，这会是一个16进制数（hex），用来<strong>代表回车</strong>。</p>
+
+<p>我们输入<code class="language-plaintext highlighter-rouge">0xA</code>，这在高级语言中相当于<code class="language-plaintext highlighter-rouge">\n</code> 作为换行符（newline）</p>
+
+<h4 id="程序结构">程序结构</h4>
+
+<p>定义好变量后，该动手写主体逻辑了：</p>
+
+<p>之前讲过，<code class="language-plaintext highlighter-rouge">.text</code>代码块规定了主体逻辑，</p>
+
+<p>我们需要定义在<strong>寄存器register</strong>（register见计算机组织架构）的内容来完成这个程序</p>
+
+<p>mov指令参数： register , value，就是告诉cpu：“把value值搬进对应的寄存器register中。”</p>
+
+<p><img src="/assets/programming/image/register1.jpg" alt="" /></p>
+
+<p><a href="www.tutorialspoint.com/assembly_programming/assembly_registers.htm">寄存器图例来源</a></p>
+
+<blockquote>
+  <p>简单说明一下这里的系统调用，这些系统调用的hex值可以在manual上查到</p>
+
+  <p>Linux 输入指令 <code class="language-plaintext highlighter-rouge">locate unistd_32.h</code> 找到这个文件</p>
+
+  <p>随后我们vim打开这个文件查看系统调用的编码</p>
+
+  <p><code class="language-plaintext highlighter-rouge">#define __NR_write 4</code></p>
+
+  <p>查到write的编码为4</p>
+
+  <p>其他调用的查询以此类推</p>
+</blockquote>
+
+<p>关于这里调用的原理，可以看这篇：<a href="https://www.cs.virginia.edu/~evans/cs216/guides/x86.html">x86 Assembly Guide</a></p>
+
+<p>我们完成如下的代码：</p>
+
+<pre><code class="language-assembly">section
+.text:
+    mov eax, 0x4        ;调用system call write()
+    mov ebx, 1          ;定义标准输出stdout为返回值，1是stdout的file describer
+    mov ecx, message    ;在缓冲区存放变量message
+    mov edx, message_length     ;存放变量长度
+    int 0x80            ;调用系统调用 write()
+                        ;int 代表了interrupt系统中断，此时中断返回值为1
+
+
+    mov eax, 0x1        ;调用system call exit()
+    mov ebx, 0          ;返回一个0，这里可以是任意值
+    int 0x80						;中断指令
+</code></pre>
+
+<h3 id="定义入口">定义入口</h3>
+
+<pre><code class="language-assembly">global	_start
+</code></pre>
+
+<p>这里的入口相当于 C / C++ 语言的<strong>main函数</strong>，告诉CPU程序的入口。</p>
+
+<p>我们把<code class="language-plaintext highlighter-rouge">_start</code>放到逻辑开始位置</p>
+
+<pre><code class="language-assembly">section .text:
+_start									;定义程序入口
+    mov eax, 0x4        ;调用system call write()
+    mov ebx, 1          ;定义标准输出stdout为返回值，1是stdout的file describer
+    mov ecx, message    ;在缓冲区存放变量message
+    mov edx, message_length     ;存放变量长度
+    int 0x80            ;调用系统调用 write()
+                        ;int 代表了interrupt系统中断，此时中断返回值为1
+
+
+    mov eax, 0x1        ;调用system call exit()
+    mov ebx, 0          ;返回一个0，这里可以是任意值
+    int 0x80						;中断指令
+</code></pre>
+
+<h3 id="汇编链接">汇编、链接</h3>
+
+<p>vim输入<code class="language-plaintext highlighter-rouge">:wq</code> 退出到shell命令行中，并保存所写的内容</p>
+
+<p>命令行输入</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nasm <span class="nt">-f</span> elf32 <span class="nt">-o</span> hello_world.o hello_world.asm <span class="c"># 汇编源码，-f 指定了目标文件的类型 -o 即output指定了输出的对象文件名</span>
+</code></pre></div></div>
+
+<p>如果一切顺利，则没有任何输出</p>
+
+<p>随后我们链接文件，生成可执行文件</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ld <span class="nt">-m</span> elf_i386 <span class="nt">-o</span> hello_world hello_world.o
+</code></pre></div></div>
+
+<p>我们执行</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./hello_world
+</code></pre></div></div>
+
+<p>如果输出</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Hello World!
+</code></pre></div></div>
+
+<p>那就大功告成了！</p>
+
+<h2 id="致谢">致谢</h2>
+
+<p>John Hammond</p>
+
+
+
+  <small>tags: <em>programming</em> - <em>assembly</em></small>
+
+
+      </section>
+    </div>
+
+    
+  </body>
+</html>
