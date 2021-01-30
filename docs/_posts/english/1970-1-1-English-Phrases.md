@@ -3,6 +3,7 @@ layout: post
 title: "记录一下学习过程中的计算机洋文"
 tags: programming language miscs
 categories: miscs
+author: noobi
 ---
 # 洋文表达 English Phrases
 

@@ -1,3 +1,7 @@
+<!--
+ * @Author: XPectuer
+ * @LastEditor: XPectuer
+-->
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: " en-US" }}">
 
@@ -25,6 +29,9 @@
                 {% endif %}
                 <a href="{{ site.github.repository_url }}" class="btn btn-github"><span class="icon"></span>View on
                     GitHub</a>
+                {% if page.name!="about.md" %}
+                <a href="/about/" class="btn">About Me</a>
+                {%endif%}
             </section>
         </div>
     </header>
