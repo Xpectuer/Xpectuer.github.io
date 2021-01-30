@@ -27,19 +27,24 @@ github_username:  Xpectuer
 
 # Build settings
 markdown: kramdown
-# theme: jekyll-theme-hacker
-theme: minima
+theme: jekyll-theme-hacker
+# theme: minima
 plugins:
   - jekyll-feed
   - jekyll-paginate
 
 defaults:
     scope:
-      path: ""
+      path: 
       type: "post"
     values:
         layout: "post"
-     
+
+github:
+  repository_url: https://github.com/Xpectuer
+  cv_url: /assets/pdfs/cv.pdf
+
+google_analytics:
 
 
 # paginate conf

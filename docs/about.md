@@ -2,6 +2,7 @@
 layout: page
 title: About Me
 permalink: /about/
+show_downloads: true
 ---
 
 This is Noobi's Tech Blog.\
