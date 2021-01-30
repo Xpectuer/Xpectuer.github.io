@@ -27,8 +27,13 @@ github_username:  Xpectuer
 
 # Build settings
 markdown: kramdown
+<<<<<<< HEAD
 theme: jekyll-theme-hacker
 # theme: minima
+=======
+# theme: jekyll-theme-hacker
+theme: jekyll-theme-hacker
+>>>>>>> 7c6ca2896c6b35e7b586b6cb059f6b22ac826d5f
 plugins:
   - jekyll-feed
   - jekyll-paginate
