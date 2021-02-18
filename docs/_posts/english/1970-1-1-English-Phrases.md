@@ -1,3 +1,7 @@
+<!--
+ * @Author: XPectuer
+ * @LastEditor: XPectuer
+-->
 ---
 layout: post
 title: "记录一下学习过程中的计算机洋文"
@@ -28,3 +32,6 @@ term in software engineering 耦合
   - ##### low coupled:
   松耦合，指程序行为按照**职责**严格分开到不同类中。
   比如，定义接口，不同的类实现接口，这是一种极端的松耦合(lowest coupling)
+
+- ##### avalanche effect
+  - 指hash算法的雪崩效应（输入端小变更引起输出的大变更）

@@ -2,7 +2,7 @@
 layout: post
 title: "计算机网络体系结构"
 tags: network interview
-categories: interview
+categories: Network
 ---
 
 
