@@ -1,13 +1,10 @@
-<!--
- * @Author: XPectuer
- * @LastEditor: XPectuer
--->
 ---
 layout: post
 categories: database
 tag: database log
 title: "MySQL的日志系统"
 author: noobi
+date: 2021-02-02
 ---
 
 # MySQL的日志系统

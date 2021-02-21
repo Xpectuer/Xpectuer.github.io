@@ -4,6 +4,7 @@ title: "聊聊并查集（Disjoin Set）"
 tags: tree, special data structure
 categories: algorithm
 author: noobi
+date: 2021-01-05
 ---
 ## 并查集（Disjoint Set 分立集合 Union Find）
 

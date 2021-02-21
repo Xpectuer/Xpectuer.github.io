@@ -1,8 +1,9 @@
 ---
 layout: post
 categories: database
-title: "事务"
+title: "MySQL的事务"
 author: noobi
+date: 2021-02-18
 ---
 
 # 事务隔离

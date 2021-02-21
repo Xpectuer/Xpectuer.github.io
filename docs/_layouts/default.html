@@ -1,7 +1,3 @@
-<!--
- * @Author: XPectuer
- * @LastEditor: XPectuer
--->
 <!DOCTYPE html>
 <html lang="{{ site.lang | default: " en-US" }}">
 
@@ -24,14 +20,17 @@
             <h2>{{ site.description | default: site.github.project_tagline }}</h2>
 
             <section id="downloads">
+                {% if page.name!="about.md" %}
+                <a href="/about/" class="btn">About Me</a>
+                {%endif%}
+                {% if page.name!="categories.md" %}
+                <a href="/categories/" class="btn">Library</a>
+                {%endif%}
                 {% if page.show_downloads %}
                 <a href="{{ site.github.cv_url }}" class="btn">Download My CV</a>
                 {% endif %}
                 <a href="{{ site.github.repository_url }}" class="btn btn-github"><span class="icon"></span>View on
                     GitHub</a>
-                {% if page.name!="about.md" %}
-                <a href="/about/" class="btn">About Me</a>
-                {%endif%}
             </section>
         </div>
     </header>

@@ -3,6 +3,7 @@ layout: post
 title: "教你用汇编语言写一个Hello World"
 tags: programming assembly
 categories: programming
+date: 2020-11-15
 ---
 # 教你用汇编语言写一个Hello World
 
